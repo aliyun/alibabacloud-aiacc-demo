@@ -36,7 +36,7 @@ The final accuracy is 0.888 and we provide the accuracy of 8 card without accura
 The deploy time is about 3.5 min, the training time is about 11.5 min, The total time is about 15 min.
 
 ## Benchmark
-On Instance of 8x V100 (gn6v-c10g1.20xlarge) the benchmark result in examples/sec.
+One Instance of 8x V100 (gn6v-c10g1.20xlarge) the benchmark result in examples/sec.
 
 | method | 1 GPU | 8 GPU | speed up |
 | ------ | ----- | ----- | -------- |
@@ -45,5 +45,5 @@ On Instance of 8x V100 (gn6v-c10g1.20xlarge) the benchmark result in examples/se
 | speed up | 3.37 | 3.14 |          |
 
 ## Notice.
-You should rememberusing `ecluster kill` command to kill the instance if you don't use it any more.
+You should remember using `ecluster kill` command to kill the instance if you don't use it any more.
 ![](docs/ecluster_kill.jpg)
