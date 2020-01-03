@@ -10,7 +10,7 @@ model = torchvision.models.resnet50(pretrained=False)
 model.eval()
 model.fc = torch.nn.Linear(2048, 3)
 
-model.load_state_dict(torch.load('save_model.pth'))
+model.load_state_dict(torch.load('save_model_0.8_0.95_0.95.pth'))
 
 device = torch.device('cuda')
 model = model.to(device)
@@ -35,14 +35,26 @@ import datetime
 import glob
 img_list = []
 import sys
-print(str(sys.argv))
-if sys.argv[1] == '0':
-    img_list = glob.glob('test-mini-dataset/scissors/IMG_*.JPG')
-elif sys.argv[1] == '1':    
-    img_list = glob.glob('test-mini-dataset/rock/IMG_*.JPG')
-else:    
-    img_list = glob.glob('test-mini-dataset/paper/IMG_*.JPG')
 
+print('usage: python inference.py test-dataset 0 JPG')
+
+print(str(sys.argv))
+test_path = 'test-mini-dataset2' if len(sys.argv) <= 2 else sys.argv[1]
+test_type = '0' if len(sys.argv) <= 2 else sys.argv[2]
+image_type = 'jpg' if len(sys.argv) <= 3 else sys.argv[3]
+
+img_list = []
+if test_type == '0':
+    img_list = glob.glob(test_path + '/scissors/*.'+image_type) #IMG_*.JPG')
+elif test_type == '1':    
+    img_list = glob.glob(test_path + '/rock/*.' + image_type) #IMG_*.JPG')
+else:    
+    img_list = glob.glob(test_path + '/paper/*.' + image_type) #IMG_*.JPG')
+'''
+for hand in ['scissors', 'rock', 'paper']:
+    for types in ['jpg', 'JPG', 'png', 'PNG']:
+        img_list.extend(glob.glob(test_path + '/' + hand + '/*.' + image_type))
+'''
 count = 0
 count_paper = 0
 count_rock = 0
@@ -51,8 +63,10 @@ res = []
 for img_file in img_list:
     count += 1
     img = Image.open(img_file)
+    # convert RGBA to RGB
+    img = img.convert("RGB")
     x = preprocess_2(img).to(device)
-    print(x.shape)
+    #print(x.shape)
     begin = datetime.datetime.now()
     y = model(x)
     import torch.nn.functional as F
@@ -68,7 +82,8 @@ for img_file in img_list:
     p_paper = float(y.flatten()[0])
     p_rock = float(y.flatten()[1])
     p_scissors = float(y.flatten()[2])
-
+    
+    print('image:', img_file)
     print("布的概率："+str(float(y.flatten()[0])))
     print("石头的概率："+str(str(float(y.flatten()[1]))))
     print("剪刀的概率："+str(float(y.flatten()[2])))
@@ -97,4 +112,4 @@ print('paper acc:', 1.0 * count_paper / count) #len(img_list))
 print('rock acc:', 1.0*count_rock / count) #len(img_list))
 print('scissors acc:', 1.0*count_scissors / count) #len(img_list))
 
-print('res:', res)
+#print('res:', res)

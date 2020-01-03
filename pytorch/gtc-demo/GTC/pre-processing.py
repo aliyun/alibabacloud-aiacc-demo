@@ -16,11 +16,12 @@ def convertjpg(jpgfile,outdir,width=224,height=224):
     except Exception as e:
         print(e)
 
-for classfile in glob.glob("test-mini-dataset/*"):
-    for jpgfile in glob.glob(classfile+"/*.JPG"):
-        save_path = "mini-dataset/" + os.path.basename(classfile)
-        os.system('mkdir -p ' + save_path)
-        convertjpg(jpgfile, save_path)
+for classfile in glob.glob("rps/*"):
+    for file_type in ['jpb', 'png', 'JPG', 'PNG']:
+        for jpgfile in glob.glob(classfile+"/*." + file_type):
+            save_path = "mini-rps-dataset/" + os.path.basename(classfile)
+            os.system('mkdir -p ' + save_path)
+            convertjpg(jpgfile, save_path)
 
 print('cost time:', time.time() - start_time)
 print('finish!')
