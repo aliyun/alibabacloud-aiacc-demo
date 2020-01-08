@@ -29,8 +29,8 @@ def parse_args():
     parser.add_argument('--test-size', type=int, default=50, help='test data size')
     parser.add_argument('--model', type=str, default='resnet50', help='finetune model type')
     parser.add_argument('--num-classes', type=int, default=3, help='num classes')
-    parser.add_argument('--pretrain', type=int, default=0, help='1: use pretrain model')
-    parser.add_argument('--pretrain-model', type=str, default='', help='pretrain model file')
+    parser.add_argument('--load-pretrain', type=int, default=0, help='1: load pretrain model')
+    parser.add_argument('--pretrain-model', type=str, default='resnet50-19c8e357.pth', help='pretrain model file')
     parser.add_argument('--start-freeze-epoch', type=int, default=0, help='start unfreeze layer after epoch')
     parser.add_argument('--decay-epoch', type=int, default=10, help='decay lr each epoch')
     parser.add_argument('--decay-lr', type=int, default=10.0, help='decay lr rate')
@@ -112,7 +112,9 @@ def train(args):
         model = models.alexnet(pretrained=True) 
         model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, 3)
     elif args.model == 'resnet50':
-        model = models.resnet50(pretrained=True) 
+        model = models.resnet50(pretrained=False if args.load_pretrain else True) 
+        if args.load_pretrain:
+            model.load_state_dict(torch.load(args.pretrain_model))
         model.fc = torch.nn.Linear(2048, args.num_classes)
     else:
         raise NotImplementedError()
@@ -120,9 +122,6 @@ def train(args):
     # freeze layer
     for p in model.parameters():
         p.requires_grad = False 
-
-    if args.pretrain:
-        model.load_state_dict(torch.load(args.pretrain_model))
 
     for p in model.fc.parameters():
         p.requires_grad = True
