@@ -12,7 +12,7 @@ NUM_GPUS = 1
 
 ncluster.set_backend('aliyun')
 parser = argparse.ArgumentParser()
-parser.add_argument('--name', type=str, default='fastgpu-gtc-demo',
+parser.add_argument('--name', type=str, default='fastgpu-gtc-demo-f',
                     help="name of the current run, used for machine naming and tensorboard visualization")
 parser.add_argument('--machines', type=int, default=1,
                     help="how many machines to use")
@@ -42,7 +42,10 @@ def main():
   # 2. upload GTC code
   job.run('yum install -y unzip')
   job.upload('GTC')
-  job.run('cd GTC && wget http://public-ai-datasets.oss-cn-huhehaote.aliyuncs.com/gtc-demo/dataset.zip && wget http://public-ai-datasets.oss-cn-huhehaote.aliyuncs.com/gtc-demo/test.JPG && conda activate torch_1.3_cu10.0_py36') 
+  job.run('cd GTC && wget http://public-ai-datasets.oss-cn-huhehaote.aliyuncs.com/gtc-demo/dataset.zip ' + 
+                 '&& wget http://public-ai-datasets.oss-cn-huhehaote.aliyuncs.com/gtc-demo/test.JPG ' + 
+                 '&& wget http://public-ai-datasets.oss-cn-huhehaote.aliyuncs.com/gtc-demo/resnet50-19c8e357.pth ' +
+                 '&& conda activate torch_1.3_cu10.0_py36') 
   upload_data = time.time()
   print('upload_data time:', upload_data - init_ncluster)
 

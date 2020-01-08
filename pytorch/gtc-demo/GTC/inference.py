@@ -3,6 +3,11 @@ import torch
 import torchvision
 from torchvision import transforms as transforms
 import PIL.Image as Image
+import cv2
+import numpy as np
+import sys
+import datetime
+import glob
 
 #model = torchvision.models.alexnet(pretrained=False)
 #model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, 3)
@@ -10,20 +15,17 @@ model = torchvision.models.resnet50(pretrained=False)
 model.eval()
 model.fc = torch.nn.Linear(2048, 3)
 
-model.load_state_dict(torch.load('save_model_0.8_0.95_0.95.pth'))
+model.load_state_dict(torch.load('save_model.pth'))
 
 device = torch.device('cuda')
 model = model.to(device)
-
-import cv2
-import numpy as np
 
 mean = 255.0 * np.array([0.485, 0.456, 0.406])
 stdev = 255.0 * np.array([0.229, 0.224, 0.225])
 
 normalize = torchvision.transforms.Normalize(mean, stdev)
 
-def preprocess_2(img):
+def preprocess(img):
     x = transforms.Compose([
         transforms.Resize((224,224)),
         transforms.ToTensor(),
@@ -31,15 +33,11 @@ def preprocess_2(img):
         ])(img)
     x = x[None, ...]
     return x
-import datetime
-import glob
-img_list = []
-import sys
 
 print('usage: python inference.py test-dataset 0 JPG')
 
 print(str(sys.argv))
-test_path = 'test-mini-dataset2' if len(sys.argv) <= 2 else sys.argv[1]
+test_path = 'test-dataset' if len(sys.argv) <= 2 else sys.argv[1]
 test_type = '0' if len(sys.argv) <= 2 else sys.argv[2]
 image_type = 'jpg' if len(sys.argv) <= 3 else sys.argv[3]
 
@@ -55,6 +53,11 @@ for hand in ['scissors', 'rock', 'paper']:
     for types in ['jpg', 'JPG', 'png', 'PNG']:
         img_list.extend(glob.glob(test_path + '/' + hand + '/*.' + image_type))
 '''
+
+for_gtc_demo = True
+if for_gtc_demo and len(sys.argv) <= 2:
+    img_list = ['test.JPG']
+
 count = 0
 count_paper = 0
 count_rock = 0
@@ -65,8 +68,7 @@ for img_file in img_list:
     img = Image.open(img_file)
     # convert RGBA to RGB
     img = img.convert("RGB")
-    x = preprocess_2(img).to(device)
-    #print(x.shape)
+    x = preprocess(img).to(device)
     begin = datetime.datetime.now()
     y = model(x)
     import torch.nn.functional as F
@@ -108,8 +110,9 @@ for img_file in img_list:
         print("你出的是剪刀")
     print("推理时间："+str(k.total_seconds()*1000)+"毫秒")
 
-print('paper acc:', 1.0 * count_paper / count) #len(img_list))
-print('rock acc:', 1.0*count_rock / count) #len(img_list))
-print('scissors acc:', 1.0*count_scissors / count) #len(img_list))
+if len(sys.argv) > 2:
+    print('paper acc:', 1.0 * count_paper / count) #len(img_list))
+    print('rock acc:', 1.0*count_rock / count) #len(img_list))
+    print('scissors acc:', 1.0*count_scissors / count) #len(img_list))
 
-#print('res:', res)
+    #print('res:', res)
