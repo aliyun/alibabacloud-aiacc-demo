@@ -12,7 +12,7 @@ NUM_GPUS = 1
 
 ncluster.set_backend('aliyun')
 parser = argparse.ArgumentParser()
-parser.add_argument('--name', type=str, default='fastgpu-gtc-demo-f',
+parser.add_argument('--name', type=str, default='fastgpu-gtc-demo',
                     help="name of the current run, used for machine naming and tensorboard visualization")
 parser.add_argument('--machines', type=int, default=1,
                     help="how many machines to use")

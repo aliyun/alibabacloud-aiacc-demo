@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument('--test-size', type=int, default=50, help='test data size')
     parser.add_argument('--model', type=str, default='resnet50', help='finetune model type')
     parser.add_argument('--num-classes', type=int, default=3, help='num classes')
-    parser.add_argument('--load-pretrain', type=int, default=0, help='1: load pretrain model')
+    parser.add_argument('--load-pretrain', type=int, default=1, help='1: load pretrain model')
     parser.add_argument('--pretrain-model', type=str, default='resnet50-19c8e357.pth', help='pretrain model file')
     parser.add_argument('--start-freeze-epoch', type=int, default=0, help='start unfreeze layer after epoch')
     parser.add_argument('--decay-epoch', type=int, default=10, help='decay lr each epoch')
