@@ -1,4 +1,4 @@
-# FastGPU v1.0.3 使用文档
+# FastGPU v1.0.6 使用文档
 
 # 一，FastGPU简介
 
@@ -26,20 +26,7 @@ FastGPU的作为衔接用户线下人工智能算法和线上海量阿里云GPU�
 
 
 # 二，FastGPU使用说明
-## 2.1. FastGPU安裝方法
-FastGPU安装方式
-
-  - python环境 python3.x， 推荐使用Anaconda 和 python 3.6
-  - 软件包下载地址：
-
-     [https://ali-perseus-release.oss-cn-huhehaote.aliyuncs.com/ncluster-1.0.3-py3-none-any.whl](https://ali-perseus-release.oss-cn-huhehaote.aliyuncs.com/ncluster-1.0.1-py3-none-any.whl)
-
-  - 安装命令   
-```bash
-pip install https://ali-perseus-release.oss-cn-huhehaote.aliyuncs.com/ncluster-1.0.3-py3-none-any.whl
-```
-
-## 2.2. FastGPU运行时使用说明
+## 2.1. FastGPU运行时使用说明
 
 本节介绍ncluster常用的api用于将线下的人工智能训练/推理脚本快速部署到阿里云上进行计算
 
@@ -93,7 +80,7 @@ job.tasks[0].upload('perseus-bert')
 **_第三节的示范脚本展示用使用ncluster runtime 进行bert finetune训练_**
 
 
-## 2.3. FastGPU命令行使用说明
+## 2.2. FastGPU命令行使用说明
 
 FastGPU提供便捷的命令行工具ecluster用于管理云上资源的生命周期和查看运行过程的日志和日常开发等
 
