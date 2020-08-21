@@ -1,6 +1,7 @@
-# FastGPU v1.0.6 使用文档
+# FastGPU v1.0.8 使用文档
 
 # 一，FastGPU简介
+
 
 FastGPU是一套构建在阿里云上的人工智能计算极速部署工具，其提供便捷的接口和自动化工具实现人工智能训练/推理计算在阿里云IAAS资源上的快速部署。
 FastGPU提供两套组件：
@@ -8,25 +9,42 @@ FastGPU提供两套组件：
 - ncluster 运行时组件提供便捷的api将线下的人工智能训练/推理脚本快速的部署在阿里云IAAS资源上进行计算。
 - ecluster命令行组件提供便捷的命令行工具用于管理阿里云上人工智能计算的运行状态和集群的生命周期。
 
+
+
 FastGPU的作为衔接用户线下人工智能算法和线上海量阿里云GPU计算资源的关键一环，方便用户将人工智能算法计算一键构建在阿里云的IAAS资源上，无需关心IAAS层相关的计算、存储、网络等繁琐的部署操作，做到简单适配、一键部署，随处运行的效果。为用户提供了省时、经济、便捷的基于阿里云IAAS资源的人工智能即刻构建方案。
 
-![图一，FastGPU组成模块](image/figure1.png)
 
+![image.png](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/122785/1574907094499-23f7ea43-1fb3-4f8b-accd-24135e2d771c.png#align=left&display=inline&height=232&margin=%5Bobject%20Object%5D&name=image.png&originHeight=417&originWidth=632&size=26811&status=done&style=none&width=352)
+_图一，FastGPU组成模块_
 图一展示了FastGPU的组成模块，底层调用阿里云的OpenAPI实现阿里云云上资源的交互层；中间层对人工智能运行所需的计算/网络/存储所需的对象封装形成阿里云的后端层；上层将人工智能的作业/任务和相应的阿里云实例资源进行映射适配形成用户控制层，即用户API接口。用户只需使用上层接口即可以方便的构建阿里云上的IAAS级人工智能计算。
 
 
-![图二，FastGPU映射层示例](image/figure2.png)
+![image.png](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/122785/1574907363635-646e7156-4ef4-497a-b6fd-01d21dd99c37.png#align=left&display=inline&height=411&margin=%5Bobject%20Object%5D&name=image.png&originHeight=568&originWidth=433&size=26637&status=done&style=none&width=313)        ![image.png](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/122785/1574908021698-1085a230-34b1-48d1-b73b-addb14032710.png#align=left&display=inline&height=409&margin=%5Bobject%20Object%5D&name=image.png&originHeight=684&originWidth=495&size=53831&status=done&style=none&width=296)
+_                             图二，FastGPU映射层示例                  图三， FastGPU典型运行流程示例_
+
 
 图二展示了FastGPU 作业/任务与阿里云上实例资源的映射关系，每一个task映射一台阿里云实例资源，用户可自行根据人工智能算法的需求将一或若干个task组成一组Job用于分布式训练/可视化显示等，FastGPU提供便捷的接口完成该映射关系。
 
-
-![图三， FastGPU典型运行流程示例](image/figure3.png)
 
 图三展示使用FastGPU进行人工智能训练的典型范例，用户的起点（source）为数据和训练代码，FastGPU组件将帮助用户自动完成中间训练过程的计算/存储/可视化资源的生命周期，用户最终获取训练完成后的模型/日志等(destination)
 
 
 # 二，FastGPU使用说明
-## 2.1. FastGPU运行时使用说明
+## 2.1. FastGPU安裝方法
+FastGPU安装方式
+
+   - python环境 python3.6 及以上环境
+   - 软件包下载地址：
+
+     （内部oss 位置 oss://ali-perseus-release/fastgpu/）
+      wget 网址：（正式版） 
+[https://ali-perseus-release.oss-cn-huhehaote.aliyuncs.com/fastgpu/ncluster-1.0.8-py3-none-any.whl](https://ali-perseus-release.oss-cn-huhehaote.aliyuncs.com/fastgpu/ncluster-1.0.8-py3-none-any.whl)
+
+
+
+
+## 2.2. FastGPU运行时使用说明
+
 
 本节介绍ncluster常用的api用于将线下的人工智能训练/推理脚本快速部署到阿里云上进行计算
 
@@ -37,10 +55,12 @@ export ALIYUN_ACCESS_KEY_SECRET=xxxxxx   # Your actual aliyun access key secret
 export ALIYUN_DEFAULT_REGION=cn-beijing  # The actual region the resource you want to use
 ```
 
+
 - 2. ncluster是一套python库，使用时需要在python脚本里import
 ```python
 import ncluster
 ```
+
 
 - 3. 使用ncluster.make_job api 创建人工智能任务对用的阿里云上的计算资源/或复用已经存在的计算资源
 ```python
@@ -51,13 +71,11 @@ import ncluster
                           instance_type=INSTANCE_TYPE)
 ```
     其中，
-```bash
     -name 为该组任务的名称，如 bert
     -run_name 为运行时的环境名，一般设置为 任务名+机器数
     -num_tasks 为需要申请的阿里云实例个数。如，num_tasks=4将在阿里云云上创建4台相同的实例，分别对用               job.tasks[0], job.tasks[1], job.tasks[2], job.tasks[3]。创建处理的实例的名称分别为task0.{name}, task1.                 {name}, task2.{name}及task3.{name} (详见第三节)
-    -imange_name 为阿里云云上实例所需的镜像名称, 可以使用公共镜像或自定义镜像
+    -image_name 为阿里云云上实例所需的镜像名称, 可以使用公共镜像或自定义镜像
     -instance_type 为需要申请的实例的类型, 如ecs.gn6v-c10g1.20xlarge 为阿里云8卡V100机型的实例类型
-```
 
 - 4. 使用job/task的api使用阿里云实例运行任务, 如下
 ```python
@@ -77,10 +95,14 @@ job.tasks[0].upload('perseus-bert')
 
  [注]: job 和task拥有相同的调用api, job的api将作用于所有tasks, task的api只作用于具体的某一个task
 
+
 **_第三节的示范脚本展示用使用ncluster runtime 进行bert finetune训练_**
 
 
-## 2.2. FastGPU命令行使用说明
+
+
+## 2.3. FastGPU命令行使用说明
+
 
 FastGPU提供便捷的命令行工具ecluster用于管理云上资源的生命周期和查看运行过程的日志和日常开发等
 
@@ -91,12 +113,11 @@ export ALIYUN_ACCESS_KEY_SECRET=xxxxxx   # Your actual aliyun access key secret
 export ALIYUN_DEFAULT_REGION=cn-beijing  # The actual region the resource you want to use
 ```
 
+
 - 2. 使用 ecluster ls 命令 展示现有的机器，如下
 
-![image.png](image/ecluster_ls.png)
+![image.png](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/122785/1572595865626-9d2a3381-4117-4d80-9aff-a05ec10aceb5.png#align=left&display=inline&height=99&margin=%5Bobject%20Object%5D&name=image.png&originHeight=176&originWidth=1258&size=31628&status=done&style=none&width=705)
      其中，
-
-```bash
      -name 展示了实例的名称
      -hours_live 展示实例创建至今的时间，以小时为单位
      -instance_type 展示实例类型
@@ -104,9 +125,10 @@ export ALIYUN_DEFAULT_REGION=cn-beijing  # The actual region the resource you wa
      -key/owner 展示密钥/账号名
      -private_ip  展示实例的内网
      -instance_id  展示实例的id
-```
+
 
 - 3. 使用ecluster create 创建一组实例，可以使用ecluster create -c create.cfg，其中create.cfg为该组实例的配置环境，如下
+
      
 ```bash
 ; config.ini
@@ -147,29 +169,33 @@ install_script=pwd
 
       如步骤3 创建的实例第一个的命令是 ecluster ssh task0.ncluster-v100
 
+
 - 5. 停止一个/一组实例用 ecluster stop
 
          如，步骤2展示的实例，停止task0 用 ecluster stop task0.ncluster-v100
                                   停止 整组实例群用  ecluster stop {ncluster-v100}
          实际命令效果如下，
-![image.png](image/ecluster_stop.png)
+![image.png](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/122785/1572597456729-4ff3a049-5b3f-4d39-91e5-e9045ec159fb.png#align=left&display=inline&height=70&margin=%5Bobject%20Object%5D&name=image.png&originHeight=104&originWidth=1021&size=17998&status=done&style=none&width=690)
+
 
 - 6. 启动已经停止的一台/一组的实例用 ecluster start
 
           如，步骤2展示的实例，启动task0 用 ecluster stop task0.ncluster-v100
                                    启动整组实例群用  ecluster stop {ncluster-v100}
        实际命令效果如下，
-![image.png](image/ecluster_start.png)
+![image.png](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/122785/1572597977067-af21c87f-c805-4f5d-bc6f-45414544ae24.png#align=left&display=inline&height=102&margin=%5Bobject%20Object%5D&name=image.png&originHeight=136&originWidth=938&size=24379&status=done&style=none&width=702)
+
 
 - 7. 释放一台/一组实例用 ecluster kill
 
           如，步骤2展示的实例，启动task0 用 ecluster kill task0.ncluster-v100
                                    启动整组实例群用  ecluster kill {ncluster-v100}
        实际命令效果如下，
-![image.png](image/ecluster_kill.png)
+![image.png](https://intranetproxy.alipay.com/skylark/lark/0/2019/png/122785/1572598123582-7d47c472-4c1e-4de9-ac71-425ae824560b.png#align=left&display=inline&height=101&margin=%5Bobject%20Object%5D&name=image.png&originHeight=141&originWidth=988&size=23163&status=done&style=none&width=705)
 
 
 下面的列表展示ecluster支持的所用命令行
+
 
 ```bash
 ecluster [help,-h,--help]  # show the usage of ecluster command 
@@ -190,7 +216,9 @@ ecluster rename {old_name} {new_name} # rename name of specified instance
 
 
 
+
 # 三, FastGPU示范用例
+
 
 以下以BERT finetune为例，展示FastGPU的使用，该用例部署时间 3.5 min, 训练时长11.5 min，总共耗时15 min，训练精度达到0.88+
 
@@ -283,6 +311,7 @@ if __name__ == '__main__':
   main()
 ```
 
+
 - 2. 运行训练任务
 ```bash
 python train_news_classifier.py
@@ -293,12 +322,13 @@ Logging to /ncluster/runs/perseus-bert-1
 training deploy time is: 196.9283847808838 s.
 ```
 
+
 - 3. 使用 `ecluster ls`  显示任务绑定的阿里云GPU实例
 
-![ecluster_ls_display.jpg](image/ecluster_ls_bert.jpeg)
+![ecluster_ls_display.jpg](https://intranetproxy.alipay.com/skylark/lark/0/2019/jpeg/122785/1574909856277-3828e1b8-34b1-4a82-90b5-15b01d2e6b17.jpeg#align=left&display=inline&height=160&margin=%5Bobject%20Object%5D&name=ecluster_ls_display.jpg&originHeight=160&originWidth=1250&size=82347&status=done&style=none&width=1250)
 
 
 - 4. 使用 `ecluster tmux task0.perseus-bert`.登陆实例显示训练过程日志，最终结果如下
 
-![training_output_log.jpg](image/ecluster_tmux_bert.jpeg)
+![training_output_log.jpg](https://intranetproxy.alipay.com/skylark/lark/0/2019/jpeg/122785/1574909906062-cebd2cd8-65a4-4f69-a893-8abefae10b7f.jpeg#align=left&display=inline&height=88&margin=%5Bobject%20Object%5D&name=training_output_log.jpg&originHeight=155&originWidth=1304&size=96938&status=done&style=none&width=742)
 
