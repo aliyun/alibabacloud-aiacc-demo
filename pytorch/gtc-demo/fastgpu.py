@@ -32,6 +32,7 @@ def main():
                           run_name=f"{args.name}-{args.machines}",
                           num_tasks=args.machines,
                           instance_type=INSTANCE_TYPE,
+                          #image_name='aiacc-dlimg-centos7:1.3.0.post3',
                           disable_nas=True,
                           spot=True,
                           install_script='') 
@@ -56,6 +57,8 @@ def main():
 
   # 4. run the training job
   job.tasks[0].run('conda activate torch_1.3_cu10.0_py36')
+  job.run('pip install opencv-python')
+  job.run("pip install 'pillow<7.0.0'")
   job.tasks[0].run('./run-perseus.sh 2>&1 | tee logs.log', non_blocking=False)
   train_time = time.time()
   print('training time:', train_time - unzip_time)
@@ -68,7 +71,7 @@ def main():
   print(f'training and inference deploy time is: {eclapse_time} s.')
 
   # 6. stop the instance (optional)
-  job.stop()
+  #job.stop()
 
 if __name__ == '__main__':
   main()
