@@ -96,8 +96,8 @@ These results were obtained by running the training script `rn50_bs64_command.sh
 | 1	| 8	| 8612.8 |	0.93 |  | 8092.0 |	0.93 |  | 1.06 |
 | 2	| 8	| 12907.2 |	0.70 | 0.75 | 9571.2 | 0.55 | 0.59 | 1.35 |
 | 4	| 8	| 22320.0 |	0.60 | 0.65 | 13228.8 | 0.38 | 0.41 | 1.69 |
-\
-\
+
+
 These results were obtained by running the training script `vgg16_bs64_command.sh`. 
 
 ![](docs/VGG16_batchsize64.png)
