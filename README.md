@@ -19,4 +19,5 @@ The AI training acceleration tool AIACC-Training (formerly Ali-Perseus-Training)
     + gtc-demo
 - tensorflow
     + bert
+    + image-classification
 
