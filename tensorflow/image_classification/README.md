@@ -27,7 +27,7 @@ The AI training acceleration tool AIACC-Training (formerly Ali-Perseus-Training)
 1. Clone the repository:
         
         git clone https://github.com/aliyun/alibabacloud-aiacc-demo.git
-        cd perseus-io-benchmarks
+        cd alibabacloud-aiacc-demo/tensorflow/image_classification
 
 2. Run the script to start a quick training:
 
