@@ -6,8 +6,10 @@ import os
 import itertools
 import time
 
-IMAGE_NAME = 'aiacc-dlimg-centos7:1.3.1'
-
+JOB_NAME = 'fastgpu-aiacc-image-classification'
+IMAGE_NAME = 'aiacc-dlimg-centos7:1.3.2'
+INSTANCE_TYPE = 'ecs.gn6v-c10g1.20xlarge'
+MACHINES = 1
 
 # conda environment available
 env_names = [
@@ -21,18 +23,18 @@ env_names = [
 'tensorflow_2.1_cu10.1_py36']
 
 
-supported_regions = ['cn-huhehaote', 'cn-zhangjiakou', 'cn-shanghai', 'cn-hangzhou']
+supported_regions = ['cn-huhehaote', 'cn-zhangjiakou', 'cn-shanghai', 'cn-hangzhou', 'cn-beijing']
 assert ncluster.get_region() in supported_regions, f"required AMI {IMAGE_NAME} has only been made available in regions {supported_regions}, but your current region is {ncluster.get_region()} (set $ALYUN_DEFAULT_REGION)"
 
 ncluster.set_backend('aliyun')
 parser = argparse.ArgumentParser()
 
 # FastGPU and instance relevant
-parser.add_argument('--name', type=str, default='dataio-worker',
+parser.add_argument('--name', type=str, default=JOB_NAME,
                     help="name of the current run, used for machine naming and tensorboard visualization")
-parser.add_argument('--machines', type=int, default=4,
+parser.add_argument('--machines', type=int, default=MACHINES,
                     help="how many machines to use")
-parser.add_argument('--instance_type', type=str, default='ecs.ebmgn6v.24xlarge',
+parser.add_argument('--instance_type', type=str, default=INSTANCE_TYPE,
                     help='choose the type of instance, make sure you have access and enough quota for this type.')
 
 # Running environment relevant
@@ -114,11 +116,12 @@ def main():
 
     NUM_GPUS = args.gpus
 
-    setup_data_disk_env()
+    #setup_data_disk_env()
     job = ncluster.make_job(name=args.name,
                             run_name=f"{args.name}-{args.machines}",
                             num_tasks=args.machines,
                             image_name=IMAGE_NAME,
+                            spot=True,
                             instance_type=args.instance_type)
 
     print('=============== Instances info ====================================')
@@ -126,7 +129,7 @@ def main():
         print(f'{task.instance.instance_name()} : {task.instance.instance_id()}')
     print('===================================================================')
 
-    job.run('mkdir /ncluster')
+    #job.run('mkdir /ncluster')
     job.upload('scripts', '/ncluster/scripts')
 
 
@@ -197,13 +200,15 @@ def main():
                    # '--resize_method=bicubic',
     gen_benchmark_command_file(" ".join(benchmark_cmd))
     job.upload('command.sh', '/ncluster/')
-    cmd = mpi_command + f'bash ./command.sh >> machine_{args.machines}_{NUM_GPUS}.log 2>&1'
+    cmd = mpi_command + f' bash ./command.sh ' # > machine_{args.machines}_{NUM_GPUS}.log & '
 
     # 4. Run command
     # job.tasks[0].run(f'echo {cmd} > {job.logdir}/task-0-cmd')
-    job.tasks[0].run(cmd, non_blocking=True)
+    job.tasks[0].run(cmd, non_blocking=False) #True)
     print(f"Logging to {job.logdir}")
 
+    # 6. stop the instance (optional)
+    #job.stop()
 
 if __name__ == '__main__':
     main()
