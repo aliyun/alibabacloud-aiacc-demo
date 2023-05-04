@@ -8,8 +8,10 @@ FastGPU is a set of fast one-click deployment tools for artificial intelligence 
   [Cloud Shell](https://shell.aliyun.com/?__source=sls.console.aliyun.com#/)  
 
 ## AIACC-Training
-The AI training acceleration tool AIACC-Training (formerly Ali-Perseus-Training) is a unified distributed deep learning training acceleration engine launched by Alibaba Cloud. It supports four mainstream distributed training frameworks, namely Tensorflow, Pytorch, MXNet and Caffe.
-  [AIACC Training](https://help.aliyun.com/document_detail/198783.html?spm=a2c4g.200965.0.0.197578865QJKJq#section-o8s-hpj-7z8)
+The AI training acceleration tool AIACC-Training (formerly Ali-Perseus-Training) is a unified distributed deep learning training acceleration engine launched by Alibaba Cloud. It supports four mainstream distributed training frameworks, namely Tensorflow, Pytorch, MXNet and Caffe.  
+  [AIACC Training 1.5](https://help.aliyun.com/document_detail/198783.html?spm=a2c4g.200965.0.0.197578865QJKJq#section-o8s-hpj-7z8)  
+  [AIACC Training 2.0 - ACSpeed](https://help.aliyun.com/document_detail/462422.html?spm=a2c4g.462031.0.0.3d7c4208xw3dr7) +
+  [AGSpeed](https://help.aliyun.com/document_detail/468640.html?spm=a2c4g.462422.0.0.599618d6ZeRPmS)  
 
 ## Open Source Solutions
   Current solutions:
