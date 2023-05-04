@@ -25,8 +25,8 @@ export PERSEUS_ALLREDUCE_NANCHECK=0
 # mxnet profiler
 #export MXNET_PROFILER_AUTOSTART=1
 
-EPOCH=26
-BS=16
+EPOCH=2
+BS=2
 NORM_LAYER='syncbn'  # bn syncbn perseussyncbn
 #NORM_LAYER='perseussyncbn'
 SAVE_PATH='save-parameter/'
@@ -37,7 +37,7 @@ DATASET="coco"
 KVSTORE='dist-sync-perseus'
 #export CUDA_VISIBLE_DEVICES='0,1,2,3,4,5,6,7' 
 
-GPUS='0,1,2,3,4,5,6,7' # only for nccl
+GPUS='0' # only for nccl
 #/root/anaconda/envs/mxnet_1.5.1.post0_cu10.0_py36/bin/python -u ./train_faster_rcnn.py \
 python -u ./train_faster_rcnn.py \
     --epochs $EPOCH \

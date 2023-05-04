@@ -1,0 +1,1 @@
+python fastgpu_script.py --name=tfbenchmark --model=resnet50 --batch_size=256 --machines=2 --gpus=8

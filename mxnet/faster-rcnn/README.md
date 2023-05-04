@@ -2,7 +2,7 @@
 
 ## prerequisite
 * Aliyun account
-* ncluster package installed.
+* fastgpu package installed.
 
 ## Training
 * 1.Register your aliyun acount using below command.
@@ -18,13 +18,13 @@ python train_faster_rcnn.py
 ```
 After the training job deployed to cloud, the console display as followed.
 ```Bash
-Logging to /ncluster/runs/perseus-faster-rcnn-1
+Logging to /fastgpu/runs/perseus-faster-rcnn-1
 training deploy time is: xxxs.
 ```
 
-* 3.Use `ecluster ls` to display the cloud machine.
+* 3.Use `fastgpu ls` to display the cloud machine.
 
-* 4.Attach to running console using `ecluster tmux task0.perseus-faster-rcnn`. 
+* 4.Attach to running console using `fastgpu tmux task0.perseus-faster-rcnn`. 
 
 ## Time
 The deploy time is about 35 min, the training time is about 15min per epoch, The total one epoch time is about 50 min.
