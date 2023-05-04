@@ -1,49 +1,43 @@
 #!/usr/bin/env python
 
 import argparse
-import ncluster
+import fastgpu
 import os
 import itertools
 import time
 
-JOB_NAME = 'fastgpu-aiacc-image-classification'
-IMAGE_NAME = 'aiacc-dlimg-centos7:1.3.2'
-INSTANCE_TYPE = 'ecs.gn6v-c10g1.20xlarge'
-MACHINES = 1
+IMAGE_TYPE = 'aiacc'
 
 # conda environment available
 env_names = [
-'tensorflow_1.12_cu9.0_py27',
-'tensorflow_1.12_cu9.0_py36',
-'tensorflow_1.14_cu10.0_py27',
-'tensorflow_1.14_cu10.0_py36',
-'tensorflow_1.15_cu10.0_py27',
-'tensorflow_1.15_cu10.0_py36',
-'tensorflow_2.1_cu10.1_py27',
-'tensorflow_2.1_cu10.1_py36']
+'tensorflow_1.14.0_cu10.0_py36',
+'tensorflow_1.15.0_cu10.0_py36',
+'tensorflow_2.0.0_cu10.0_py36',
+'tensorflow_2.1.0_cu10.1_py36',
+'tensorflow_2.2.0_cu10.1_py36',
+'tensorflow_2.3.0_cu10.1_py36',
+'tensorflow_2.4.0_cu11.0_py36'
+]
 
+supported_regions = ['cn-huhehaote', 'cn-zhangjiakou', 'cn-shanghai', 'cn-hangzhou', 'cn-shenzhen', 'cn-beijing']
+assert fastgpu.get_region() in supported_regions, f"required AMI {IMAGE_NAME} has only been made available in regions {supported_regions}, but your current region is {fastgpu.get_region()} (set $ALYUN_DEFAULT_REGION)"
 
-supported_regions = ['cn-huhehaote', 'cn-zhangjiakou', 'cn-shanghai', 'cn-hangzhou', 'cn-beijing']
-assert ncluster.get_region() in supported_regions, f"required AMI {IMAGE_NAME} has only been made available in regions {supported_regions}, but your current region is {ncluster.get_region()} (set $ALYUN_DEFAULT_REGION)"
-
-ncluster.set_backend('aliyun')
+fastgpu.set_backend('aliyun')
 parser = argparse.ArgumentParser()
 
 # FastGPU and instance relevant
-parser.add_argument('--name', type=str, default=JOB_NAME,
+parser.add_argument('--name', type=str, default='worker',
                     help="name of the current run, used for machine naming and tensorboard visualization")
-parser.add_argument('--machines', type=int, default=MACHINES,
+parser.add_argument('--machines', type=int, default=2,
                     help="how many machines to use")
-parser.add_argument('--instance_type', type=str, default=INSTANCE_TYPE,
+parser.add_argument('--instance_type', type=str, default='ecs.gn6v-c8g1.16xlarge',
                     help='choose the type of instance, make sure you have access and enough quota for this type.')
 
 # Running environment relevant
 parser.add_argument('--gpus', type=int, default=8,
                     help="how many gpu you want to use in one machine")
-parser.add_argument('--env', type=str, default='1.15',
-                    help='version of tensorflow. 1.12, 1.14, 1.15 or 2.1.')
-parser.add_argument('--py2',action='store_true',
-                    help='flag to use python2')
+parser.add_argument('--env', type=str, default='1.15.0',
+                    help='version of tensorflow. 1.14.0, 1.15.0, 2.0.0, ')
 parser.add_argument('--hvd', action='store_true',
                     help="flag to use horovod as variable_update instead of perseus.")
 
@@ -67,6 +61,7 @@ args = parser.parse_args()
 def get_mpi_command(np_param, npernode_param, host_param, hvd=False):
     if not hvd:
         mpi_cmd = f'mpirun --allow-run-as-root -np {np_param} --npernode {npernode_param} --host {host_param} ' \
+                '--prefix /usr/local ' \
                 '--bind-to none ' \
                 '-map-by slot ' \
                 '-x NCCL_SOCKET_IFNAME=^lo,docker0 ' \
@@ -78,6 +73,7 @@ def get_mpi_command(np_param, npernode_param, host_param, hvd=False):
                 '-x NCCL_MAX_NRINGS=3 '
     else:
         mpi_cmd = f'mpirun --allow-run-as-root -np {np_param} --npernode {npernode_param} --host {host_param} ' \
+                '--prefix /usr/local' \
                 '--bind-to none ' \
                 '-map-by slot ' \
                 '-x NCCL_SOCKET_IFNAME=^lo,docker0 ' \
@@ -97,44 +93,34 @@ def gen_benchmark_command_file(benchamrk_command):
         f.write('fi\n')
 
 def setup_data_disk_env():
-    ncluster.ncluster_globals.set_should_disable_nas(True)
+    fastgpu.fastgpu_globals.set_should_disable_nas(True)
     os.environ['FASTGPU_SKIP_COST_CONFORM'] = '1'
     os.environ['ALIYUN_DATA_DISK_SIZE'] = '2048'
-    snapshot_id = {"cn-huhehaote": "s-hp339cokv04es714tx43",
-                   "cn-zhangjiakou": "s-8vbersrfqlf0cvz7azb1",
-                   "cn-shanghai": "s-uf627xzyllp9yisblade",
-                   "cn-hangzhou": "s-bp18u85sr8ny1wydcf6i"
-                   }
-
-    os.environ['NCLUSTER_ALIYUN_SNAPSHOT_ID'] = snapshot_id[
-        ncluster.get_region()]  # imagenet snapshot id at cn-hangzhou
-
 
 def main():
 
     # 1. Create Job
-
     NUM_GPUS = args.gpus
+    WORKSPACE = '/root/fastgpu'
 
-    #setup_data_disk_env()
-    job = ncluster.make_job(name=args.name,
-                            run_name=f"{args.name}-{args.machines}",
-                            num_tasks=args.machines,
-                            image_name=IMAGE_NAME,
-                            spot=True,
-                            instance_type=args.instance_type)
+    setup_data_disk_env()
+    job = fastgpu.make_job(name=args.name,
+                           run_name=f"{args.name}-{args.machines}",
+                           num_tasks=args.machines,
+                           image_type=IMAGE_TYPE,
+                           instance_type=args.instance_type)
 
     print('=============== Instances info ====================================')
     for task in job.tasks:
         print(f'{task.instance.instance_name()} : {task.instance.instance_id()}')
     print('===================================================================')
 
-    #job.run('mkdir /ncluster')
-    job.upload('scripts', '/ncluster/scripts')
+    job.run(f'mkdir -p {WORKSPACE}')
+    job.upload('scripts', f'{WORKSPACE}/scripts')
 
 
     # 2. Select Conda Environment
-    py = 'py27' if args.py2 else 'py36'
+    py = 'py36'
     env_name = None
     for name in env_names:
         if (args.env in name) and (py in name):
@@ -143,7 +129,7 @@ def main():
     if env_name:
         job.run(f'conda activate %s'%env_name)
     else:
-        job.run('conda activate tensorflow_1.15_cu10.0_py36')
+        job.run('conda activate tensorflow_1.15.0_cu10.0_py36')
 
 
     job.run('pip install mpi4py')
@@ -157,8 +143,8 @@ def main():
         job.run('cp -r /data/imagenet-dataset/imagenet /dev/shm/')
 
 
-    # 3. Generate command.
-    job.run('cd /ncluster/')
+    # 3. Generate the command.
+    job.run(f'cd {WORKSPACE}')
     hosts = [task.ip + f':{NUM_GPUS}' for task in job.tasks]
     host_str = ','.join(hosts)
     print('Host: ', host_str)
@@ -199,16 +185,19 @@ def main():
                    # '--data_format=NHWC',
                    # '--resize_method=bicubic',
     gen_benchmark_command_file(" ".join(benchmark_cmd))
-    job.upload('command.sh', '/ncluster/')
-    cmd = mpi_command + f' bash ./command.sh ' # > machine_{args.machines}_{NUM_GPUS}.log & '
+    job.upload('command.sh', f'{WORKSPACE}')
+    cmd = mpi_command + f'bash ./command.sh'
 
     # 4. Run command
-    # job.tasks[0].run(f'echo {cmd} > {job.logdir}/task-0-cmd')
-    job.tasks[0].run(cmd, non_blocking=False) #True)
-    print(f"Logging to {job.logdir}")
+    job.tasks[0].run(cmd, show_realtime=True)
+    print(f"Benchmark Finished! \nYou can login the instance by \'fastgpu ssh task0.tfbenchmark\' and find the log file in {job.tasks[0]._out_fn}\n")
 
-    # 6. stop the instance (optional)
-    #job.stop()
+    # 5. Stop Instances
+    job.stop()
+
+    # 6. Terminate Instances (Optional)
+    job.kill()
+
 
 if __name__ == '__main__':
     main()
