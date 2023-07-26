@@ -1,2 +1,2 @@
-numpy==1.17
+numpy==1.22.0
 gluoncv==0.7.0
